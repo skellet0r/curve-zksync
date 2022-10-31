@@ -7,3 +7,4 @@ line_length = 100
 
 [tool.pytest.ini_options]
 addopts = "--disable-isolation"
+testpaths = ["tests"]
