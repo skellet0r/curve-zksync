@@ -1,4 +1,6 @@
+-e lib/ape-zksync
 black
+eth-ape
 flake8
 isort
 pre-commit
