@@ -1,0 +1,3 @@
+[submodule "ape-zksync"]
+	path = lib/ape-zksync
+	url = https://github.com/skellet0r/ape-zksync.git
