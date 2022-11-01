@@ -6,5 +6,5 @@ profile = "black"
 line_length = 100
 
 [tool.pytest.ini_options]
-addopts = "--disable-isolation"
+addopts = "--disable-isolation --disable-warnings"
 testpaths = ["tests"]
