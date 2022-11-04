@@ -39,3 +39,8 @@ def bob(accounts):
 @pytest.fixture(scope="session")
 def charlie(accounts):
     yield accounts[2]
+
+
+@pytest.fixture
+def mock_foo(alice, project):
+    yield project.Foo.deploy(sender=alice)
