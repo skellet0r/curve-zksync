@@ -1,3 +1,4 @@
+import ape
 import pytest
 
 
@@ -26,3 +27,8 @@ def test_add_new_id(alice, chain, provider):
 
     event = next(provider.NewAddressIdentifier.from_receipt(receipt))
     assert event.event_arguments == dict(id=1, addr=provider.address, description="Foo")
+
+
+def test_add_new_id_reverts_invalid_caller(bob, provider):
+    with ape.reverts():
+        provider.add_new_id(provider, "Foo", sender=bob)
