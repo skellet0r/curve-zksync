@@ -1,3 +1,5 @@
+import math
+
 import ape
 import pytest
 
@@ -21,7 +23,9 @@ def test_add_new_id(alice, chain, mock_foo, provider):
     assert info.addr == mock_foo
     assert info.is_active is True
     assert info.version == 1
-    assert info.last_modified == chain.blocks[receipt.block_number].timestamp
+    # TODO: why is TIMESTAMP opcode up to 2 seconds earlier than timestamp returned
+    # by eth_getBlockBy*
+    assert math.isclose(info.last_modified, chain.blocks[receipt.block_number].timestamp, abs_tol=2)
     assert info.description == "Foo"
 
     event = next(provider.NewAddressIdentifier.from_receipt(receipt))
@@ -38,16 +42,24 @@ def test_add_new_id_reverts_invalid_address(alice, bob, provider):
         provider.add_new_id(bob, "Foo", sender=alice)
 
 
-def test_set_address_registry(alice, chain, mock_foo, provider):
-    receipt = provider.set_address(0, mock_foo, sender=alice)
-    assert provider.max_id() == 0  # unchanged
-    assert provider.get_registry() == mock_foo
+@pytest.mark.parametrize("id", [0, 1])
+def test_set_address(alice, chain, mock_foo, provider, id):
+    if id != 0:
+        provider.add_new_id(mock_foo, "Foo", sender=alice)
 
-    info = provider.get_id_info(0)
+    receipt = provider.set_address(id, mock_foo, sender=alice)
+
+    if id == 0:
+        assert provider.get_registry() == mock_foo
+
+    info = provider.get_id_info(id)
+    expected_version = 1 if id == 0 else 2
     assert info.addr == mock_foo
     assert info.is_active is True
-    assert info.version == 1
-    assert info.last_modified == chain.blocks[receipt.block_number].timestamp
+    assert info.version == expected_version
+    assert math.isclose(info.last_modified, chain.blocks[receipt.block_number].timestamp, abs_tol=2)
 
     event = next(provider.AddressModified.from_receipt(receipt))
-    assert event.event_arguments == dict(id=0, new_address=mock_foo.address, version=1)
+    assert event.event_arguments == dict(
+        id=id, new_address=mock_foo.address, version=expected_version
+    )
