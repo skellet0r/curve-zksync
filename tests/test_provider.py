@@ -63,3 +63,18 @@ def test_set_address(alice, chain, mock_foo, provider, id):
     assert event.event_arguments == dict(
         id=id, new_address=mock_foo.address, version=expected_version
     )
+
+
+def test_set_address_reverts_invalid_caller(bob, mock_foo, provider):
+    with ape.reverts():
+        provider.set_address(0, mock_foo, sender=bob)
+
+
+def test_set_address_reverts_invalid_address(alice, bob, provider):
+    with ape.reverts():
+        provider.set_address(0, bob, sender=alice)
+
+
+def test_set_address_reverts_invalid_id(alice, mock_foo, provider):
+    with ape.reverts():
+        provider.set_address(42, mock_foo, sender=alice)
