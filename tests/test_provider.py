@@ -2,6 +2,7 @@ import math
 
 import ape
 import pytest
+from ape.utils import ZERO_ADDRESS
 
 
 @pytest.fixture
@@ -78,3 +79,25 @@ def test_set_address_reverts_invalid_address(alice, bob, provider):
 def test_set_address_reverts_invalid_id(alice, mock_foo, provider):
     with ape.reverts():
         provider.set_address(42, mock_foo, sender=alice)
+
+
+@pytest.mark.parametrize("id", [0, 1])
+def test_unset_address(alice, chain, mock_foo, provider, id):
+    if id == 0:
+        provider.set_address(0, mock_foo, sender=alice)
+    else:
+        provider.add_new_id(mock_foo, "Foo", sender=alice)
+
+    receipt = provider.unset_address(id, sender=alice)
+
+    if id == 0:
+        assert provider.get_registry() == ZERO_ADDRESS
+
+    info = provider.get_id_info(id)
+    assert info.addr == ZERO_ADDRESS
+    assert info.is_active is False
+    assert info.version == 1
+    assert math.isclose(info.last_modified, chain.blocks[receipt.block_number].timestamp, abs_tol=2)
+
+    event = next(provider.AddressModified.from_receipt(receipt))
+    assert event.event_arguments == dict(id=id, new_address=ZERO_ADDRESS, version=1)
