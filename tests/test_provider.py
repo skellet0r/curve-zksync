@@ -135,3 +135,15 @@ def test_commit_transfer_ownership_reverts_active_transfer(alice, bob, charlie, 
     provider.commit_transfer_ownership(bob, sender=alice)
     with ape.reverts():
         provider.commit_transfer_ownership(charlie, sender=alice)
+
+
+def test_revert_transfer_ownership(alice, bob, provider):
+    provider.commit_transfer_ownership(bob, sender=alice)
+    provider.revert_transfer_ownership(sender=alice)
+
+    assert provider.transfer_ownership_deadline() == 0
+
+
+def test_revert_transfer_ownership_reverts_invalid_caller(bob, provider):
+    with ape.reverts():
+        provider.revert_transfer_ownership(sender=bob)
