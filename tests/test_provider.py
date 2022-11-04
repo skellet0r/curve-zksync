@@ -32,3 +32,8 @@ def test_add_new_id(alice, chain, provider):
 def test_add_new_id_reverts_invalid_caller(bob, provider):
     with ape.reverts():
         provider.add_new_id(provider, "Foo", sender=bob)
+
+
+def test_add_new_id_reverts_invalid_address(alice, provider):
+    with ape.reverts():
+        provider.add_new_id(alice, "Foo", sender=alice)
