@@ -124,3 +124,14 @@ def test_commit_transfer_ownership(alice, bob, chain, provider):
 
     event = next(provider.CommitNewAdmin.from_receipt(receipt))
     assert event.event_arguments == dict(deadline=deadline, admin=bob.address)
+
+
+def test_commit_transfer_ownership_reverts_invalid_caller(bob, provider):
+    with ape.reverts():
+        provider.commit_transfer_ownership(bob, sender=bob)
+
+
+def test_commit_transfer_ownership_reverts_active_transfer(alice, bob, charlie, provider):
+    provider.commit_transfer_ownership(bob, sender=alice)
+    with ape.reverts():
+        provider.commit_transfer_ownership(charlie, sender=alice)
