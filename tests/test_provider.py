@@ -111,3 +111,16 @@ def test_unset_address_reverts_invalid_caller(bob, provider):
 def test_unset_address_reverts_invalid_id(alice, provider):
     with ape.reverts():
         provider.unset_address(0, sender=alice)
+
+
+def test_commit_transfer_ownership(alice, bob, chain, provider):
+    receipt = provider.commit_transfer_ownership(bob, sender=alice)
+
+    deadline = provider.transfer_ownership_deadline()
+    assert provider.future_admin() == bob
+    assert math.isclose(
+        deadline, chain.blocks[receipt.block_number].timestamp + 3 * 86400, abs_tol=2
+    )
+
+    event = next(provider.CommitNewAdmin.from_receipt(receipt))
+    assert event.event_arguments == dict(deadline=deadline, admin=bob.address)
