@@ -1,0 +1,6 @@
+# @zk-version 1.2.0
+
+
+@external
+def main():
+    pass
