@@ -33,9 +33,9 @@ def alice(accounts):
 
 @pytest.fixture(scope="session")
 def bob(accounts):
-    yield accounts[0]
+    yield accounts[1]
 
 
 @pytest.fixture(scope="session")
 def charlie(accounts):
-    yield accounts[0]
+    yield accounts[2]
