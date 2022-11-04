@@ -101,3 +101,13 @@ def test_unset_address(alice, chain, mock_foo, provider, id):
 
     event = next(provider.AddressModified.from_receipt(receipt))
     assert event.event_arguments == dict(id=id, new_address=ZERO_ADDRESS, version=1)
+
+
+def test_unset_address_reverts_invalid_caller(bob, provider):
+    with ape.reverts():
+        provider.unset_address(0, sender=bob)
+
+
+def test_unset_address_reverts_invalid_id(alice, provider):
+    with ape.reverts():
+        provider.unset_address(0, sender=alice)
