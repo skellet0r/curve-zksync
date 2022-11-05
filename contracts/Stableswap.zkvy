@@ -83,6 +83,18 @@ def approve(_spender: address, _value: uint256) -> bool:
 
 
 @external
+def increaseAllowance(_spender: address, _add_value: uint256) -> bool:
+    self._approve(msg.sender, _spender, self.allowance[msg.sender][_spender] + _add_value)
+    return True
+
+
+@external
+def decreaseAllowance(_spender: address, _sub_value: uint256) -> bool:
+    self._approve(msg.sender, _spender, self.allowance[msg.sender][_spender] - _sub_value)
+    return True
+
+
+@external
 def burnFrom(_sender: address, _value: uint256) -> bool:
     allowance: uint256 = self.allowance[_sender][msg.sender]
     if allowance != MAX_UINT256:
