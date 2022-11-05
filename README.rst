@@ -14,7 +14,7 @@ Development
 
     .. code-block:: bash
 
-        $ git clone --recurse-submodules
+        $ git clone --recurse-submodules https://github.com/skellet0r/curve-zksync.git
 
 #. Install python requirements
 
