@@ -21,13 +21,26 @@ event Transfer:
 
 NAME: constant(String[32]) = ""
 SYMBOL: constant(String[16]) = ""
+VERSION: constant(String[8]) = ""
 
 EIP712_TYPEHASH: constant(bytes32) = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)")
+NAME_HASH: constant(bytes32) = keccak256(NAME)
+VERSION_HASH: constant(bytes32) = keccak256(VERSION)
+
+
+CACHED_CHAIN_ID: immutable(uint256)
+SALT: immutable(bytes32)
 
 
 allowance: public(HashMap[address, HashMap[address, uint256]])
 balanceOf: public(HashMap[address, uint256])
 totalSupply: public(uint256)
+
+
+@external
+def __init__():
+    CACHED_CHAIN_ID = chain.id
+    SALT = convert(block.timestamp, bytes32)
 
 
 @internal
@@ -128,3 +141,15 @@ def symbol() -> String[16]:
 @external
 def decimals() -> uint8:
     return 18
+
+
+@pure
+@external
+def version() -> String[8]:
+    return VERSION
+
+
+@pure
+@external
+def salt() -> bytes32:
+    return SALT
