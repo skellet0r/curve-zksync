@@ -8,6 +8,10 @@ from vyper.interfaces import ERC20
 implements: ERC20
 
 
+interface EIP1271:
+    def isValidSignature(_digest: bytes32, _signature: Bytes[65]) -> bytes4: view
+
+
 event Approval:
     owner: indexed(address)
     spender: indexed(address)
@@ -28,6 +32,8 @@ NAME_HASH: constant(bytes32) = keccak256(NAME)
 VERSION_HASH: constant(bytes32) = keccak256(VERSION)
 
 EIP2612_TYPEHASH: constant(bytes32) = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)")
+
+EIP1271_MAGIC: constant(bytes4) = 0x1626ba7e
 
 
 CACHED_CHAIN_ID: immutable(uint256)
@@ -141,7 +147,12 @@ def permit(_owner: address, _spender: address, _value: uint256, _deadline: uint2
             keccak256(_abi_encode(EIP2612_TYPEHASH, _owner, _spender, _value, nonce, _deadline))
         )
     )
-    assert ecrecover(digest, convert(_v, uint256), convert(_r, uint256), convert(_s, uint256)) == _owner
+
+    if _owner.is_contract:
+        signature: Bytes[65] = concat(_r, _s, slice(convert(_v, bytes32), 31, 1))
+        assert EIP1271(_owner).isValidSignature(digest, signature) == EIP1271_MAGIC
+    else:
+        assert ecrecover(digest, convert(_v, uint256), convert(_r, uint256), convert(_s, uint256)) == _owner
 
     self.nonces[_owner] = nonce + 1
     self._approve(_owner, _spender, _value)
