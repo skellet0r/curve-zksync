@@ -22,6 +22,8 @@ event Transfer:
 NAME: constant(String[32]) = ""
 SYMBOL: constant(String[16]) = ""
 
+EIP712_TYPEHASH: constant(bytes32) = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)")
+
 
 allowance: public(HashMap[address, HashMap[address, uint256]])
 balanceOf: public(HashMap[address, uint256])
