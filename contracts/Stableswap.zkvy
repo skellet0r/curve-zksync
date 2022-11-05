@@ -86,6 +86,23 @@ def _transfer(_sender: address, _receiver: address, _value: uint256):
     log Transfer(_sender, _receiver, _value)
 
 
+@view
+@internal
+def _domain_separator() -> bytes32:
+    if chain.id != CACHED_CHAIN_ID:
+        return keccak256(
+            _abi_encode(
+                EIP712_TYPEHASH,
+                NAME_HASH,
+                VERSION_HASH,
+                chain.id,
+                self,
+                SALT,
+            )
+        )
+    return CACHED_DOMAIN_SEPARATOR
+
+
 @external
 def transferFrom(_sender: address, _receiver: address, _value: uint256) -> bool:
     allowance: uint256 = self.allowance[_sender][msg.sender]
