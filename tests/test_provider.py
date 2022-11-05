@@ -137,6 +137,32 @@ def test_commit_transfer_ownership_reverts_active_transfer(alice, bob, charlie, 
         provider.commit_transfer_ownership(charlie, sender=alice)
 
 
+@pytest.mark.skip(reason="evm_(mine|setTime) RPC method unavailable")
+def test_apply_transfer_ownership(alice, bob, chain, provider):
+    provider.commit_transfer_ownership(bob, sender=alice)
+    chain.mine(deltatime=3 * 86400)
+    provider.apply_transfer_ownership(sender=alice)
+
+    assert provider.admin() == bob
+    assert provider.transfer_ownership_deadline() == 0
+
+
+def test_apply_transfer_ownership_reverts_invalid_caller(bob, provider):
+    with ape.reverts():
+        provider.apply_transfer_ownership(sender=bob)
+
+
+def test_apply_transfer_ownership_reverts_inactive_transfer(alice, provider):
+    with ape.reverts():
+        provider.apply_transfer_ownership(sender=alice)
+
+
+def test_apply_transfer_ownership_reverts_too_early(alice, bob, provider):
+    provider.commit_transfer_ownership(bob, sender=alice)
+    with ape.reverts():
+        provider.apply_transfer_ownership(sender=alice)
+
+
 def test_revert_transfer_ownership(alice, bob, provider):
     provider.commit_transfer_ownership(bob, sender=alice)
     provider.revert_transfer_ownership(sender=alice)
