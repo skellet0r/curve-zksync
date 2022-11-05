@@ -82,6 +82,22 @@ def approve(_spender: address, _value: uint256) -> bool:
     return True
 
 
+@external
+def burnFrom(_sender: address, _value: uint256) -> bool:
+    allowance: uint256 = self.allowance[_sender][msg.sender]
+    if allowance != MAX_UINT256:
+        self._approve(_sender, msg.sender, allowance - _value)
+
+    self._burn(_sender, _value)
+    return True
+
+
+@external
+def burn(_value: uint256) -> bool:
+    self._burn(msg.sender, _value)
+    return True
+
+
 @pure
 @external
 def name() -> String[32]:
