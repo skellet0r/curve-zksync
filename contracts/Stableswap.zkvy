@@ -30,6 +30,7 @@ VERSION_HASH: constant(bytes32) = keccak256(VERSION)
 
 CACHED_CHAIN_ID: immutable(uint256)
 SALT: immutable(bytes32)
+CACHED_DOMAIN_SEPARATOR: immutable(bytes32)
 
 
 allowance: public(HashMap[address, HashMap[address, uint256]])
@@ -41,6 +42,16 @@ totalSupply: public(uint256)
 def __init__():
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
+    CACHED_DOMAIN_SEPARATOR = keccak256(
+        _abi_encode(
+            EIP712_TYPEHASH,
+            NAME_HASH,
+            VERSION_HASH,
+            chain.id,
+            self,
+            block.timestamp,
+        )
+    )
 
 
 @internal
