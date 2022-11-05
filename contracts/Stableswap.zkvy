@@ -1,0 +1,85 @@
+# @zk-version 1.2.0
+"""
+@title Stableswap
+@author CurveFi
+"""
+from vyper.interfaces import ERC20
+
+implements: ERC20
+
+
+event Approval:
+    owner: indexed(address)
+    spender: indexed(address)
+    value: uint256
+
+event Transfer:
+    sender: indexed(address)
+    receiver: indexed(address)
+    value: uint256
+
+
+NAME: constant(String[32]) = ""
+SYMBOL: constant(String[16]) = ""
+
+
+allowance: public(HashMap[address, HashMap[address, uint256]])
+balanceOf: public(HashMap[address, uint256])
+totalSupply: public(uint256)
+
+
+@internal
+def _approve(_owner: address, _spender: address, _value: uint256):
+    self.allowance[_owner][_spender] = _value
+
+    log Approval(_owner, _spender, _value)
+
+
+@internal
+def _transfer(_sender: address, _receiver: address, _value: uint256):
+    assert _receiver not in [self, ZERO_ADDRESS]
+
+    self.balanceOf[_sender] -= _value
+    self.balanceOf[_receiver] += _value
+
+    log Transfer(_sender, _receiver, _value)
+
+
+@external
+def transferFrom(_sender: address, _receiver: address, _value: uint256) -> bool:
+    allowance: uint256 = self.allowance[_sender][msg.sender]
+    if allowance != MAX_UINT256:
+        self._approve(_sender, msg.sender, allowance - _value)
+
+    self._transfer(_sender, _receiver, _value)
+    return True
+
+
+@external
+def transfer(_receiver: address, _value: uint256) -> bool:
+    self._transfer(msg.sender, _receiver, _value)
+    return True
+
+
+@external
+def approve(_spender: address, _value: uint256) -> bool:
+    self._approve(msg.sender, _spender, _value)
+    return True
+
+
+@pure
+@external
+def name() -> String[32]:
+    return NAME
+
+
+@pure
+@external
+def symbol() -> String[16]:
+    return SYMBOL
+
+
+@pure
+@external
+def decimals() -> uint8:
+    return 18
