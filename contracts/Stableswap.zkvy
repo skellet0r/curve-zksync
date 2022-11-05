@@ -36,6 +36,21 @@ def _approve(_owner: address, _spender: address, _value: uint256):
 
 
 @internal
+def _burn(_sender: address, _value: uint256):
+    self.balanceOf[_sender] -= _value
+
+    log Transfer(_sender, ZERO_ADDRESS, _value)
+
+
+@internal
+def _mint(_receiver: address, _value: uint256):
+    assert _receiver not in [self, ZERO_ADDRESS]
+
+    self.balanceOf[_receiver] += _value
+    log Transfer(ZERO_ADDRESS, _receiver, _value)
+
+
+@internal
 def _transfer(_sender: address, _receiver: address, _value: uint256):
     assert _receiver not in [self, ZERO_ADDRESS]
 
