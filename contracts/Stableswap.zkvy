@@ -32,8 +32,9 @@ NAME_HASH: constant(bytes32) = keccak256(NAME)
 VERSION_HASH: constant(bytes32) = keccak256(VERSION)
 
 EIP2612_TYPEHASH: constant(bytes32) = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)")
-
 EIP1271_MAGIC: constant(bytes4) = 0x1626ba7e
+
+N_COINS: constant(uint256) = 3
 
 
 CACHED_CHAIN_ID: immutable(uint256)
