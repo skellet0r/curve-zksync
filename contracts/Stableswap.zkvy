@@ -23,6 +23,13 @@ event Transfer:
     value: uint256
 
 
+struct ParamA:
+    future: uint256
+    future_time: uint256
+    initial: uint256
+    initial_time: uint256
+
+
 NAME: constant(String[32]) = ""
 SYMBOL: constant(String[16]) = ""
 VERSION: constant(String[8]) = ""
@@ -47,6 +54,9 @@ balanceOf: public(HashMap[address, uint256])
 totalSupply: public(uint256)
 
 nonces: public(HashMap[address, uint256])
+
+# [uint64 initial_A_time || uint64 initial_A || uint64 future_A_time || uint64 future_A]
+packed_A: uint256
 
 
 @external
