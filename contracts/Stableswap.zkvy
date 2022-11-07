@@ -389,6 +389,63 @@ def _get_D(_rates: uint256[N_COINS], _balances: uint256[N_COINS], _amp: uint256)
     return self._calc_D(xp, _amp)
 
 
+@view
+@internal
+def _get_y(i: int128, j: int128, x: uint256, xp: uint256[N_COINS]) -> uint256:
+    """
+    Calculate x[j] if one makes x[i] = x
+
+    Done by solving quadratic equation iteratively.
+    x_1**2 + x_1 * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
+    x_1**2 + b*x_1 = c
+
+    x_1 = (x_1**2 + c) / (2*x_1 + b)
+    """
+    # x in the input is converted to the same price/precision
+
+    assert i != j       # dev: same coin
+    assert j >= 0       # dev: j below zero
+    assert j < N_COINS_128  # dev: j above N_COINS
+
+    # should be unreachable, but good for safety
+    assert i >= 0
+    assert i < N_COINS_128
+
+    amp: uint256 = self._A()
+    D: uint256 = self._calc_D(xp, amp)
+    S_: uint256 = 0
+    _x: uint256 = 0
+    y_prev: uint256 = 0
+    c: uint256 = D
+    Ann: uint256 = amp * N_COINS
+
+    for _i in range(N_COINS_128):
+        if _i == i:
+            _x = x
+        elif _i != j:
+            _x = xp[_i]
+        else:
+            continue
+        S_ += _x
+        c = c * D / (_x * N_COINS)
+
+    c = c * D * A_PRECISION / (Ann * N_COINS)
+    b: uint256 = S_ + D * A_PRECISION / Ann  # - D
+    y: uint256 = D
+
+    for _i in range(255):
+        y_prev = y
+        y = (y*y + c) / (2 * y + b - D)
+        # Equality with the precision of 1
+        if y > y_prev:
+            if y - y_prev <= 1:
+                return y
+        else:
+            if y_prev - y <= 1:
+                return y
+    raise
+
+
 @external
 def transferFrom(_sender: address, _receiver: address, _value: uint256) -> bool:
     allowance: uint256 = self.allowance[_sender][msg.sender]
