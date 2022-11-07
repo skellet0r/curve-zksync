@@ -30,6 +30,8 @@ struct ParamA:
     initial_time: uint256
 
 
+MASK_64: constant(uint256) = 2**64 - 1
+
 NAME: constant(String[32]) = ""
 SYMBOL: constant(String[16]) = ""
 VERSION: constant(String[8]) = ""
@@ -122,6 +124,30 @@ def _domain_separator() -> bytes32:
             )
         )
     return CACHED_DOMAIN_SEPARATOR
+
+
+@view
+@internal
+def _load_packed_A() -> ParamA:
+    packed_A: uint256 = self.packed_A
+    return ParamA({
+        future: bitwise_and(packed_A, MASK_64),
+        future_time: bitwise_and(shift(packed_A, -64), MASK_64),
+        initial: bitwise_and(shift(packed_A, -128), MASK_64),
+        initial_time: shift(packed_A, -196),
+    })
+
+
+@internal
+def _store_packed_A(_value: ParamA):
+    values: uint256[4] = [_value.future, _value.future_time, _value.initial, _value.initial_time]
+
+    packed_A: uint256 = 0
+    for i in range(4):
+        assert values[i] < 2**64
+        packed_A += shift(values[i], i * 64)
+
+    self.packed_A = packed_A
 
 
 @external
