@@ -29,6 +29,12 @@ event AcceptOwnership:
     previous_owner: indexed(address)
     new_owner: indexed(address)
 
+event RampA:
+    old_A: uint256
+    new_A: uint256
+    initial_time: uint256
+    future_time: uint256
+
 
 struct ParamA:
     future: uint256
@@ -55,6 +61,11 @@ EIP2612_TYPEHASH: constant(bytes32) = keccak256(
 EIP1271_MAGIC: constant(bytes4) = 0x1626BA7E
 
 N_COINS: constant(uint256) = 3
+
+A_PRECISION: constant(uint256) = 100
+MAX_A: constant(uint256) = 1_000_000
+MAX_A_CHANGE: constant(uint256) = 10
+MIN_RAMP_TIME: constant(uint256) = 86400
 
 
 CACHED_CHAIN_ID: immutable(uint256)
@@ -289,6 +300,35 @@ def burnFrom(_sender: address, _value: uint256) -> bool:
 def burn(_value: uint256) -> bool:
     self._burn(msg.sender, _value)
     return True
+
+
+@external
+def ramp_A(_future_A: uint256, _future_time: uint256):
+    assert msg.sender == self.owner
+    assert _future_A != 0 and _future_A < MAX_A
+    assert _future_time >= block.timestamp + MIN_RAMP_TIME
+
+    initial_A: uint256 = self._A()
+    future_A: uint256 = _future_A * A_PRECISION
+
+    if initial_A < future_A:
+        # increasing
+        assert future_A <= initial_A * MAX_A_CHANGE
+    else:
+        # decreasing
+        assert future_A * MAX_A_CHANGE >= initial_A
+
+    self._store_packed_A(
+        ParamA(
+            {
+                future: future_A,
+                future_time: _future_time,
+                initial: initial_A,
+                initial_time: block.timestamp,
+            }
+        )
+    )
+    log RampA(initial_A, future_A, block.timestamp, _future_time)
 
 
 @external
