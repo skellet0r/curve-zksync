@@ -535,6 +535,18 @@ def DOMAIN_SEPARATOR() -> bytes32:
 
 @view
 @external
+def A() -> uint256:
+    return self._A() / A_PRECISION
+
+
+@view
+@external
+def A_precise() -> uint256:
+    return self._A()
+
+
+@view
+@external
 def initial_A() -> uint256:
     return self._load_packed_A().initial
 
