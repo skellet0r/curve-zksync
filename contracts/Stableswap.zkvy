@@ -71,7 +71,7 @@ struct ParamFee:
 MASK_40: constant(uint256) = 2**40 - 1
 MASK_64: constant(uint256) = 2**64 - 1
 
-VERSION: constant(String[8]) = ""
+VERSION: constant(String[8]) = "1"
 
 EIP712_TYPEHASH: constant(bytes32) = keccak256(
     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
