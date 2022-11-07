@@ -91,7 +91,9 @@ packed_A: uint256
 
 
 @external
-def __init__():
+def __init__(_A: uint256):
+    assert _A < 2**64
+
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
     CACHED_DOMAIN_SEPARATOR = keccak256(
@@ -105,7 +107,9 @@ def __init__():
         )
     )
 
+    self.packed_A = _A
     self.owner = msg.sender
+
     log AcceptOwnership(ZERO_ADDRESS, msg.sender)
 
 
