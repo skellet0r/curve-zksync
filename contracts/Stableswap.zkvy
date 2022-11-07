@@ -80,6 +80,9 @@ MAX_A: constant(uint256) = 1_000_000
 MAX_A_CHANGE: constant(uint256) = 10
 MIN_RAMP_TIME: constant(uint256) = 86400
 
+MAX_FEE: constant(uint256) = 5 * 10**9  # 50%
+MAX_ADMIN_FEE: constant(uint256) = 10**10  # 100%
+
 
 CACHED_CHAIN_ID: immutable(uint256)
 SALT: immutable(bytes32)
