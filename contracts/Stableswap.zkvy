@@ -39,6 +39,15 @@ event StopRampA:
     A: uint256
     time: uint256
 
+event CommitFee:
+    deadline: uint256
+    fee: uint256
+    admin_fee: uint256
+
+event ApplyFee:
+    fee: uint256
+    admin_fee: uint256
+
 
 struct ParamA:
     future: uint256
