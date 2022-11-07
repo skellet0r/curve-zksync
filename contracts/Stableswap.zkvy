@@ -90,6 +90,7 @@ MIN_RAMP_TIME: constant(uint256) = 86400
 
 MAX_FEE: constant(uint256) = 5 * 10**9  # 50%
 MAX_ADMIN_FEE: constant(uint256) = 10**10  # 100%
+FEE_DEADLINE_DELTA: constant(uint256) = 3 * 86400  # 3 days
 
 
 CACHED_CHAIN_ID: immutable(uint256)
@@ -114,9 +115,9 @@ packed_fee: uint256
 
 @external
 def __init__(_A: uint256, _fee: uint256, _admin_fee: uint256):
-    assert _A < MAX_A
-    assert _fee < MAX_FEE
-    assert _admin_fee < _admin_fee
+    assert _A <= MAX_A
+    assert _fee <= MAX_FEE
+    assert _admin_fee <= _admin_fee
 
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
@@ -365,7 +366,7 @@ def burn(_value: uint256) -> bool:
 @external
 def ramp_A(_future_A: uint256, _future_time: uint256):
     assert msg.sender == self.owner
-    assert _future_A != 0 and _future_A < MAX_A
+    assert _future_A != 0 and _future_A <= MAX_A
     assert _future_time >= block.timestamp + MIN_RAMP_TIME
 
     initial_A: uint256 = self._A()
