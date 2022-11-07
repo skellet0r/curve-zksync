@@ -153,7 +153,7 @@ def __init__(
         )
     )
 
-    self.packed_A = _A
+    self.packed_A = _A * A_PRECISION
     self.packed_fee = shift(_admin_fee, 40) + _fee
     self.owner = msg.sender
 
