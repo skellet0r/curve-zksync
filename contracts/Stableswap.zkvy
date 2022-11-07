@@ -71,14 +71,11 @@ struct ParamFee:
 MASK_40: constant(uint256) = 2**40 - 1
 MASK_64: constant(uint256) = 2**64 - 1
 
-NAME: constant(String[32]) = ""
-SYMBOL: constant(String[16]) = ""
 VERSION: constant(String[8]) = ""
 
 EIP712_TYPEHASH: constant(bytes32) = keccak256(
     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
 )
-NAME_HASH: constant(bytes32) = keccak256(NAME)
 VERSION_HASH: constant(bytes32) = keccak256(VERSION)
 
 EIP2612_TYPEHASH: constant(bytes32) = keccak256(
@@ -98,6 +95,10 @@ MAX_ADMIN_FEE: constant(uint256) = 10**10  # 100%
 FEE_DEADLINE_DELTA: constant(uint256) = 3 * 86400  # 3 days
 
 
+NAME: immutable(String[32])
+SYMBOL: immutable(String[16])
+
+NAME_HASH: immutable(bytes32)
 CACHED_CHAIN_ID: immutable(uint256)
 SALT: immutable(bytes32)
 CACHED_DOMAIN_SEPARATOR: immutable(bytes32)
@@ -123,6 +124,8 @@ packed_fee: uint256
 
 @external
 def __init__(
+    _name: String[32],
+    _symbol: String[16],
     _coins: address[N_COINS],
     _A: uint256,
     _fee: uint256,
@@ -137,9 +140,12 @@ def __init__(
         assert _coins[i] != ZERO_ADDRESS
         rates[i] = 10 ** (36 - convert(EIP20(_coins[i]).decimals(), uint256))
 
+    NAME = _name
+    SYMBOL = _symbol
     COINS = _coins
     RATES = rates
 
+    NAME_HASH = keccak256(_name)
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
     CACHED_DOMAIN_SEPARATOR = keccak256(
