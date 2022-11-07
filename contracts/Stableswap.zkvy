@@ -48,6 +48,8 @@ event ApplyFee:
     fee: uint256
     admin_fee: uint256
 
+event RevertFee: pass
+
 
 struct ParamA:
     future: uint256
@@ -408,6 +410,50 @@ def stop_ramp_A():
         )
     )
     log StopRampA(current_A, block.timestamp)
+
+
+@external
+def commit_new_fee(_new_fee: uint256, _new_admin_fee: uint256):
+    assert msg.sender == self.owner
+    assert _new_fee <= MAX_FEE and _new_admin_fee <= MAX_ADMIN_FEE
+
+    param_fee: ParamFee = self._load_packed_fee()
+    assert param_fee.deadline == 0
+
+    param_fee.deadline = block.timestamp + FEE_DEADLINE_DELTA
+    param_fee.future_swap = _new_fee
+    param_fee.future_admin = _new_admin_fee
+
+    self._store_packed_fee(param_fee)
+    log CommitFee(param_fee.deadline, _new_fee, _new_admin_fee)
+
+
+@external
+def apply_new_fee():
+    assert msg.sender == self.owner
+
+    param_fee: ParamFee = self._load_packed_fee()
+    assert param_fee.deadline != 0 and param_fee.deadline <= block.timestamp
+
+    param_fee.swap = param_fee.future_swap
+    param_fee.admin = param_fee.future_admin
+    param_fee.deadline = 0
+
+    self._store_packed_fee(param_fee)
+    log ApplyFee(param_fee.swap, param_fee.admin)
+
+
+@external
+def revert_new_fee():
+    assert msg.sender == self.owner
+
+    param_fee: ParamFee = self._load_packed_fee()
+    assert param_fee.deadline != 0
+
+    param_fee.deadline = 0
+
+    self._store_packed_fee(param_fee)
+    log RevertFee()
 
 
 @external
