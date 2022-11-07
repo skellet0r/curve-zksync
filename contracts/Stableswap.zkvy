@@ -35,6 +35,10 @@ event RampA:
     initial_time: uint256
     future_time: uint256
 
+event StopRampA:
+    A: uint256
+    time: uint256
+
 
 struct ParamA:
     future: uint256
@@ -329,6 +333,24 @@ def ramp_A(_future_A: uint256, _future_time: uint256):
         )
     )
     log RampA(initial_A, future_A, block.timestamp, _future_time)
+
+
+@external
+def stop_ramp_A():
+    assert msg.sender == self.owner
+
+    current_A: uint256 = self._A()
+    self._store_packed_A(
+        ParamA(
+            {
+                future: current_A,
+                future_time: block.timestamp,
+                initial: current_A,
+                initial_time: block.timestamp,
+            }
+        )
+    )
+    log StopRampA(current_A, block.timestamp)
 
 
 @external
