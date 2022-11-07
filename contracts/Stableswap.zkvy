@@ -446,6 +446,40 @@ def _get_y(i: int128, j: int128, x: uint256, xp: uint256[N_COINS]) -> uint256:
     raise
 
 
+@view
+@internal
+def _calc_withdraw_one_coin(_burn_amount: uint256, i: int128) -> uint256[2]:
+    # First, need to calculate
+    # * Get current D
+    # * Solve Eqn against y_i for D - _token_amount
+    amp: uint256 = self._A()
+    rates: uint256[N_COINS] = RATES
+    xp: uint256[N_COINS] = self._calc_xp(rates, self.balances)
+    D0: uint256 = self._calc_D(xp, amp)
+
+    total_supply: uint256 = self.totalSupply
+    D1: uint256 = D0 - _burn_amount * D0 / total_supply
+    new_y: uint256 = self.get_y_D(amp, i, xp, D1)
+
+    base_fee: uint256 = self.fee * N_COINS / (4 * (N_COINS - 1))
+    xp_reduced: uint256[N_COINS] = empty(uint256[N_COINS])
+
+    for j in range(N_COINS):
+        dx_expected: uint256 = 0
+        xp_j: uint256 = xp[j]
+        if j == i:
+            dx_expected = xp_j * D1 / D0 - new_y
+        else:
+            dx_expected = xp_j - xp_j * D1 / D0
+        xp_reduced[j] = xp_j - base_fee * dx_expected / FEE_DENOMINATOR
+
+    dy: uint256 = xp_reduced[i] - self.get_y_D(amp, i, xp_reduced, D1)
+    dy_0: uint256 = (xp[i] - new_y) * PRECISION / rates[i]  # w/o fees
+    dy = (dy - 1) * PRECISION / rates[i]  # Withdraw less to account for rounding errors
+
+    return [dy, dy_0 - dy]
+
+
 @external
 def transferFrom(_sender: address, _receiver: address, _value: uint256) -> bool:
     allowance: uint256 = self.allowance[_sender][msg.sender]
@@ -756,3 +790,15 @@ def future_fee() -> uint256:
 @external
 def future_admin_fee() -> uint256:
     return self._load_packed_fee().future_admin
+
+
+@view
+@external
+def coins(_idx: uint256) -> address:
+    return COINS[_idx]
+
+
+@view
+@external
+def rate_multipliers(_idx: uint256) -> uint256:
+    return RATES[_idx]
