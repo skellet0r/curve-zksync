@@ -55,6 +55,13 @@ struct ParamA:
     initial: uint256
     initial_time: uint256
 
+struct ParamFee:
+    swap: uint256
+    admin: uint256
+    deadline: uint256
+    future_swap: uint256
+    future_admin: uint256
+
 
 MASK_40: constant(uint256) = 2**40 - 1
 MASK_64: constant(uint256) = 2**64 - 1
@@ -101,6 +108,8 @@ future_owner: public(address)
 
 # [uint64 initial_A_time || uint64 initial_A || uint64 future_A_time || uint64 future_A]
 packed_A: uint256
+# [uint56 <empty> || uint40 future_admin_fee || uint40 future_fee || uint40 deadline || uint40 admin_fee || uint40 fee]
+packed_fee: uint256
 
 
 @external
@@ -173,6 +182,33 @@ def _domain_separator() -> bytes32:
             )
         )
     return CACHED_DOMAIN_SEPARATOR
+
+
+@view
+@internal
+def _load_packed_fee() -> ParamFee:
+    packed_fee: uint256 = self.packed_fee
+    return ParamFee(
+        {
+            swap: bitwise_and(packed_fee, MASK_40),
+            admin: bitwise_and(shift(packed_fee, -40), MASK_40),
+            deadline: bitwise_and(shift(packed_fee, -80), MASK_40),
+            future_swap: bitwise_and(shift(packed_fee, -120), MASK_40),
+            future_admin: shift(packed_fee, -160)
+        }
+    )
+
+
+@internal
+def _store_packed_fee(_value: ParamFee):
+    values: uint256[5] = [_value.swap, _value.admin, _value.deadline, _value.future_swap, _value.future_admin]
+
+    packed_fee: uint256 = 0
+    for i in range(5):
+        assert values[i] < 2**40
+        packed_fee += shift(values[i], i * 40)
+
+    self.packed_fee = packed_fee
 
 
 @view
