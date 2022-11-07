@@ -113,8 +113,10 @@ packed_fee: uint256
 
 
 @external
-def __init__(_A: uint256):
-    assert _A < 2**64
+def __init__(_A: uint256, _fee: uint256, _admin_fee: uint256):
+    assert _A < MAX_A
+    assert _fee < MAX_FEE
+    assert _admin_fee < _admin_fee
 
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
@@ -130,6 +132,7 @@ def __init__(_A: uint256):
     )
 
     self.packed_A = _A
+    self.packed_fee = shift(_admin_fee, 40) + _fee
     self.owner = msg.sender
 
     log AcceptOwnership(ZERO_ADDRESS, msg.sender)
