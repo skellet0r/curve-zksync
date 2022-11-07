@@ -483,3 +483,33 @@ def future_A() -> uint256:
 @external
 def future_A_time() -> uint256:
     return self._load_packed_A().future_time
+
+
+@view
+@external
+def fee() -> uint256:
+    return self._load_packed_fee().swap
+
+
+@view
+@external
+def admin_fee() -> uint256:
+    return self._load_packed_fee().admin
+
+
+@view
+@external
+def fee_deadline() -> uint256:
+    return self._load_packed_fee().deadline
+
+
+@view
+@external
+def future_fee() -> uint256:
+    return self._load_packed_fee().future_swap
+
+
+@view
+@external
+def future_admin_fee() -> uint256:
+    return self._load_packed_fee().future_admin
