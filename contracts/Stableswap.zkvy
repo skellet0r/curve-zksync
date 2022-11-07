@@ -8,6 +8,9 @@ from vyper.interfaces import ERC20
 implements: ERC20
 
 
+interface EIP20:
+    def decimals() -> uint8: view
+
 interface EIP1271:
     def isValidSignature(_digest: bytes32, _signature: Bytes[65]) -> bytes4: view
 
@@ -99,6 +102,9 @@ CACHED_CHAIN_ID: immutable(uint256)
 SALT: immutable(bytes32)
 CACHED_DOMAIN_SEPARATOR: immutable(bytes32)
 
+COINS: immutable(address[N_COINS])
+RATES: immutable(uint256[N_COINS])
+
 
 allowance: public(HashMap[address, HashMap[address, uint256]])
 balanceOf: public(HashMap[address, uint256])
@@ -116,10 +122,23 @@ packed_fee: uint256
 
 
 @external
-def __init__(_A: uint256, _fee: uint256, _admin_fee: uint256):
+def __init__(
+    _coins: address[N_COINS],
+    _A: uint256,
+    _fee: uint256,
+    _admin_fee: uint256
+):
     assert _A <= MAX_A
     assert _fee <= MAX_FEE
     assert _admin_fee <= _admin_fee
+
+    rates: uint256[N_COINS] = empty(uint256[N_COINS])
+    for i in range(N_COINS):
+        assert _coins[i] != ZERO_ADDRESS
+        rates[i] = 10 ** (36 - convert(EIP20(_coins[i]).decimals(), uint256))
+
+    COINS = _coins
+    RATES = rates
 
     CACHED_CHAIN_ID = chain.id
     SALT = convert(block.timestamp, bytes32)
