@@ -333,6 +333,13 @@ def _calc_D(_xp: uint256[N_COINS], _amp: uint256) -> uint256:
     raise
 
 
+@view
+@internal
+def _get_D(_rates: uint256[N_COINS], _balances: uint256[N_COINS], _amp: uint256) -> uint256:
+    xp: uint256[N_COINS] = self._calc_xp(_rates, _balances)
+    return self._calc_D(xp, _amp)
+
+
 @external
 def transferFrom(_sender: address, _receiver: address, _value: uint256) -> bool:
     allowance: uint256 = self.allowance[_sender][msg.sender]
