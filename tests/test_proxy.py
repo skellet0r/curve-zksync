@@ -88,3 +88,32 @@ def test_revoke_admin_change(proxy, alice, bob, charlie, idx, should_approve):
 def test_revoke_admin_change_reverts_caller_is_not_admin(proxy, charlie):
     with ape.reverts():
         proxy.revoke_admin_change(sender=charlie)
+
+
+def test_accept_admin_change(proxy, alice, bob, charlie):
+    proxy.request_admin_change(charlie, sender=alice)
+    proxy.approve_admin_change(sender=bob)
+
+    receipt = proxy.accept_admin_change(sender=charlie)
+
+    assert proxy.admins(0) == charlie
+
+    assert proxy.pending_current_admin() == 0
+    assert proxy.pending_new_admin() == ZERO_ADDRESS
+    assert proxy.change_approved() is False
+
+    event = next(proxy.AcceptAdminChange.from_receipt(receipt))
+    assert event.event_arguments == dict(previous_admin=alice, current_admin=charlie)
+
+
+def test_accept_admin_change_reverts_not_approved(proxy, alice, charlie):
+    proxy.request_admin_change(charlie, sender=alice)
+    with ape.reverts():
+        proxy.accept_admin_change(sender=charlie)
+
+
+def test_accept_admin_change_reverts_invalid_caller(proxy, alice, bob, charlie):
+    proxy.request_admin_change(charlie, sender=alice)
+    proxy.approve_admin_change(sender=bob)
+    with ape.reverts():
+        proxy.accept_admin_change(sender=alice)
