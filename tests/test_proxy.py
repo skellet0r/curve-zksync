@@ -15,6 +15,21 @@ def test_constructor(proxy, alice, bob):
     assert proxy.admins(1) == bob
 
 
+def test_execute(proxy, alice, mock_foo):
+    calldata = b"\xcd\xe4\xef\xa9"
+    receipt = proxy.execute(mock_foo, calldata, sender=alice)
+
+    assert mock_foo.switch() is True
+
+    event = next(proxy.TransactionExecuted.from_receipt(receipt))
+    assert event.event_arguments == dict(admin=alice, target=mock_foo, calldata=calldata, value=0)
+
+
+def test_execute_reverts_invalid_caller(proxy, charlie, mock_foo):
+    with ape.reverts():
+        proxy.execute(mock_foo, b"\xcd\xe4\xef\xa9", sender=charlie)
+
+
 def test_request_admin_change(proxy, alice, charlie):
     receipt = proxy.request_admin_change(charlie, sender=alice)
 
