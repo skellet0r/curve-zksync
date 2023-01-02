@@ -1,5 +1,8 @@
+import itertools
+
 import ape
 import pytest
+from ape.utils import ZERO_ADDRESS
 
 
 @pytest.fixture
@@ -60,3 +63,28 @@ def test_approve_admin_change_reverts_invalid_caller(proxy, alice, charlie):
     proxy.request_admin_change(charlie, sender=alice)
     with ape.reverts():
         proxy.approve_admin_change(sender=alice)
+
+
+@pytest.mark.parametrize("idx,should_approve", itertools.product([0, 1], [False, True]))
+def test_revoke_admin_change(proxy, alice, bob, charlie, idx, should_approve):
+    revoker = [alice, bob][idx]
+
+    proxy.request_admin_change(charlie, sender=alice)
+    if should_approve:
+        proxy.approve_admin_change(sender=bob)
+
+    receipt = proxy.revoke_admin_change(sender=revoker)
+
+    assert proxy.pending_current_admin() == 0
+    assert proxy.pending_new_admin() == ZERO_ADDRESS
+    assert proxy.change_approved() is False
+
+    event = next(proxy.RevokeAdminChange.from_receipt(receipt))
+    assert event.event_arguments == dict(
+        current_admin=alice, future_admin=charlie, calling_admin=revoker
+    )
+
+
+def test_revoke_admin_change_reverts_caller_is_not_admin(proxy, charlie):
+    with ape.reverts():
+        proxy.revoke_admin_change(sender=charlie)
