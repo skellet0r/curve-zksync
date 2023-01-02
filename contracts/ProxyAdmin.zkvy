@@ -34,9 +34,9 @@ event AcceptAdminChange:
 
 admins: public(address[2])
 
-pending_current_admin: uint256
-pending_new_admin: address
-change_approved: bool
+pending_current_admin: public(uint256)
+pending_new_admin: public(address)
+change_approved: public(bool)
 
 
 @external
