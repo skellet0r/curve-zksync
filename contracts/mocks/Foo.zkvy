@@ -1,0 +1,14 @@
+# @zk-version 1.2.0
+
+
+switch: public(bool)
+
+
+@external
+def main():
+    pass
+
+
+@external
+def flip():
+    self.switch = not self.switch
