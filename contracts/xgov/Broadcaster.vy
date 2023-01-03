@@ -5,6 +5,12 @@
 """
 
 
+interface IZKSync:
+    def l2TransactionBaseCost(
+        _gas_price: uint256, _ergs_limit: uint256, _calldata_length: uint32
+    ) -> uint256: view
+
+
 event ApplyAdmins:
     admins: AdminSet
 
