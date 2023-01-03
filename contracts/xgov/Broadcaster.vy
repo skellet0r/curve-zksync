@@ -99,3 +99,9 @@ def apply_admins():
 
     self.admins = future_admins
     log ApplyAdmins(future_admins)
+
+
+@payable
+@external
+def __default__():
+    assert len(msg.data) == 0
