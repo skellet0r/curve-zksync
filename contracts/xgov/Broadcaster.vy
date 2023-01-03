@@ -11,6 +11,9 @@ event ApplyAdmins:
 event CommitAdmins:
     future_admins: AdminSet
 
+event SetZKSync:
+    zksync: address
+
 
 enum Agent:
     OWNERSHIP
@@ -37,9 +40,11 @@ future_admins: public(AdminSet)
 
 agent: HashMap[address, Agent]
 
+zksync: public(address)
+
 
 @external
-def __init__(_admins: AdminSet):
+def __init__(_admins: AdminSet, _zksync: address):
     assert _admins.ownership != _admins.parameter  # a != b
     assert _admins.ownership != _admins.emergency  # a != c
     assert _admins.parameter != _admins.emergency  # b != c
@@ -50,7 +55,10 @@ def __init__(_admins: AdminSet):
     self.agent[_admins.parameter] = Agent.PARAMETER
     self.agent[_admins.emergency] = Agent.EMERGENCY
 
+    self.zksync = _zksync
+
     log ApplyAdmins(_admins)
+    log SetZKSync(_zksync)
 
 
 @external
@@ -61,6 +69,14 @@ def broadcast(_messages: DynArray[Message, MAX_MESSAGES]):
     """
     agent: Agent = self.agent[msg.sender]
     assert agent != empty(Agent)
+
+
+@external
+def set_zksync(_zksync: address):
+    assert msg.sender == self.admins.ownership
+
+    self.zksync = _zksync
+    log SetZKSync(_zksync)
 
 
 @external
