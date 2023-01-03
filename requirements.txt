@@ -1,4 +1,5 @@
 -e lib/ape-zksync
+ape-vyper
 black
 eth-ape
 flake8
