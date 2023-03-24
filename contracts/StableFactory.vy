@@ -1,4 +1,4 @@
-# @version 0.2.16
+# @version 0.3.3
 """
 @title Curve Sidechain/L2 Factory
 @license MIT
@@ -106,8 +106,10 @@ event LiquidityGaugeDeployed:
     gauge: address
 
 
-MAX_COINS: constant(int128) = 8
-MAX_PLAIN_COINS: constant(int128) = 4  # max coins in a plain pool
+MAX_COINS: constant(uint256) = 8
+MAX_COINS_128: constant(int128) = 8
+MAX_PLAIN_COINS: constant(uint256) = 4  # max coins in a plain pool
+MAX_PLAIN_COINS_128: constant(int128) = 4  # max coins in a plain pool
 ADDRESS_PROVIDER: constant(address) = 0x0000000022D53366457F9d5E68Ec105046FC4383
 
 admin: public(address)
@@ -275,7 +277,7 @@ def get_underlying_decimals(_pool: address) -> uint256[MAX_COINS]:
     decimals[0] = pool_decimals[0]
     base_pool: address = self.pool_data[_pool].base_pool
     packed_decimals: uint256 = self.base_pool_data[base_pool].decimals
-    for i in range(MAX_COINS):
+    for i in range(MAX_COINS_128):
         unpacked: uint256 = shift(packed_decimals, -8 * i) % 256
         if unpacked == 0:
             break
@@ -409,9 +411,9 @@ def get_coin_indices(
     found_market: bool = False
     i: int128 = 0
     j: int128 = 0
-    for x in range(MAX_COINS):
+    for x in range(MAX_COINS_128):
         if base_pool == ZERO_ADDRESS:
-            if x >= MAX_PLAIN_COINS:
+            if x >= MAX_PLAIN_COINS_128:
                 raise "No available market"
             if x != 0:
                 coin = self.pool_data[_pool].coins[x]
